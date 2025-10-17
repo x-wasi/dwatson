@@ -10,7 +10,8 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 4000;
-const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URL || 'mongodb+srv://onlydevsx_db_user:aN0cWgqkOWo4rhiD@cluster0.jfuzynl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URL || 'mongodb+srv://onlydevsx_db_user:aN0cWgqkOWo4rhiD@cluster0.jfuzynl.mongodb.net/sales_dashboard?retryWrites=true&w=majority&appName=Cluster0
+';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -483,6 +484,7 @@ app.listen(port, () => {
 // app.listen(port, () => {
 //   console.log(`Server listening on http://localhost:${port}`);
 // });
+
 
 
 
