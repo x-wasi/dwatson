@@ -1,0 +1,3415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Dashboard - D.Watson Pharmacy</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #2c6e8a;
+            --secondary-color: #4fb3d9;
+            --accent-color: #0a4d68;
+            --light-bg: #f8f9fa;
+            --dark-text: #212529;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --sidebar-width: 250px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #b30000; /* Deep red background */
+            color: var(--dark-text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Navbar Styles */
+        .navbar {
+            background: linear-gradient(135deg, #b30000, #d32f2f);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            padding: 0.3rem 1rem; /* Reduced padding */
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 0.9rem; /* Reduced font size */
+            color: white !important;
+            padding: 0; /* Remove padding */
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 40px; /* Adjusted to match new navbar height */
+            left: 0;
+            height: calc(100vh - 40px); /* Adjusted to match new navbar height */
+            width: var(--sidebar-width);
+            background: #fff5f5;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+        }
+        
+        .sidebar .nav-link {
+            color: var(--dark-text);
+            padding: 12px 20px;
+            border-radius: 0;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--light-bg);
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 64px 20px 20px; /* Adjusted top padding */
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+        
+        /* Card Styles */
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: none;
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: 600;
+            padding: 12px 15px;
+        }
+        
+        /* Category Box Styles - Updated */
+        .category-card {
+            height: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .category-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .category-body {
+            padding: 20px;
+            background: white;
+        }
+        
+        .category-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .metric-row {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+        }
+        
+        .metric-row.sales {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        
+        .metric-row.cost {
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+        }
+        
+        .metric-row.profit {
+            background: linear-gradient(135deg, #17a2b8, #3498db);
+        }
+        
+        .metric-label {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .metric-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .category-footer {
+            text-align: center;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        /* Dashboard polish */
+        .dashboard-header .dashboard-title {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .dashboard-header .dashboard-subtitle {
+            color: #6c757d;
+        }
+
+        /* Stat cards */
+        .stat-card {
+            border: none;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(44, 110, 138, 0.12);
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(44, 110, 138, 0.18);
+        }
+        .stat-card .category-value {
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+        .stat-card .category-label {
+            font-size: .9rem;
+            color: #6c757d;
+        }
+
+        /* Summary accent stripes */
+        #reportSummary .card.stat-card {
+            position: relative;
+            overflow: hidden;
+        }
+        #reportSummary .card.stat-card:before {
+            content: "";
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(closest-side, rgba(79,179,217,0.25), rgba(79,179,217,0));
+            transform: rotate(25deg);
+        }
+
+        /* Tables */
+        .table-hover tbody tr:hover {
+            background-color: rgba(79,179,217,0.08);
+        }
+        thead th {
+            border-bottom-width: 2px;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+        }
+        .btn-primary:hover {
+            filter: brightness(1.03);
+            box-shadow: 0 6px 16px rgba(79,179,217,0.35);
+        }
+        .btn-outline-primary:hover {
+            color: #fff !important;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-color: transparent;
+        }
+
+        /* Utility badges */
+        .badge.positive { background: rgba(40,167,69,.15); color: #28a745; }
+        .badge.negative { background: rgba(220,53,69,.15); color: #dc3545; }
+
+        /* Mobile responsiveness */
+        #sidebarOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.25);
+            display: none;
+            z-index: 998;
+        }
+        #sidebarOverlay.active { display: block; }
+
+        @media (max-width: 992px) {
+            :root { --sidebar-width: 220px; }
+            .main-content { padding: 56px 16px 16px; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 56px 12px 16px; }
+            .dashboard-title { font-size: 1.5rem; }
+            .dashboard-subtitle { font-size: .95rem; }
+            .card-header { padding: 10px 12px; }
+            .card-body { padding: 12px; }
+            .input-group-text { font-size: .9rem; }
+            .table { font-size: .92rem; }
+            .invoice-card { font-size: .95rem; }
+            .invoice-actions .btn { padding: .25rem .5rem; }
+            .filter-section .row > [class^="col-"] { flex: 0 0 100%; max-width: 100%; }
+        }
+        
+        /* Print styles */
+        @media print {
+            .navbar, .sidebar { display: none !important; }
+            .main-content { margin: 0 !important; padding: 0 !important; }
+            .content-section { display: none !important; }
+            #reports-section { display: block !important; }
+            .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+            .dashboard-header { margin-top: 0 !important; }
+        }
+        
+        .margin-badge {
+            font-size: 0.9rem;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .margin-badge.positive {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .margin-badge.negative {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        /* Grand Total Special Styling */
+        .category-card.grand-total .category-header {
+            background: linear-gradient(135deg, #6f42c1, #8e44ad);
+            font-size: 1.2rem;
+        }
+        
+        /* Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(44, 110, 138, 0.3);
+        }
+        
+        /* Table Styles */
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .table thead th {
+            background-color: var(--light-bg);
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .table td {
+            vertical-align: middle;
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Form Styles */
+        .form-control, .form-select {
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(44, 110, 138, 0.25);
+        }
+        
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            display: none;
+        }
+        
+        /* Content Sections */
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        /* Dashboard Tabs */
+        .dashboard-tabs {
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .dashboard-tabs .nav-tabs {
+            border-bottom: none;
+        }
+        
+        .dashboard-tabs .nav-tabs .nav-link {
+            color: var(--dark-text);
+            border: none;
+            border-radius: 5px;
+            margin-right: 5px;
+            padding: 8px 15px;
+        }
+        
+        .dashboard-tabs .nav-tabs .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Sales Comparison Card */
+        .sales-comparison-card {
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 64px 15px 15px;
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+            
+            .metric-value {
+                font-size: 1.2rem;
+            }
+            
+            .category-card {
+                margin-bottom: 20px;
+            }
+            
+            /* Responsive Tabs */
+            .dashboard-tabs .nav-tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            
+            .dashboard-tabs .nav-tabs .nav-link {
+                padding: 8px 10px;
+                font-size: 0.875rem;
+            }
+            
+            /* Responsive Tables */
+            .table-responsive-stack {
+                display: block;
+            }
+            
+            .table-responsive-stack thead {
+                display: none;
+            }
+            
+            .table-responsive-stack, .table-responsive-stack tbody, .table-responsive-stack tr, .table-responsive-stack td {
+                display: block;
+                width: 100%;
+            }
+            
+            .table-responsive-stack tr {
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                padding: 10px;
+            }
+            
+            .table-responsive-stack td {
+                text-align: right;
+                padding-left: 50%;
+                position: relative;
+                border: none;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .table-responsive-stack td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                height: 100%;
+                font-weight: bold;
+                text-align: left;
+            }
+            
+            /* Responsive Cards */
+            .card {
+                margin-bottom: 15px;
+            }
+            
+            /* Responsive Buttons */
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn-group .btn {
+                border-radius: 5px;
+                margin-bottom: 5px;
+            }
+        }
+        
+        /* Dashboard Header */
+        .dashboard-header {
+            margin-bottom: 25px;
+        }
+        
+        .dashboard-title {
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--dark-text);
+            margin-bottom: 10px;
+        }
+        
+        .dashboard-subtitle {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+        
+        /* Section Title */
+        .section-title {
+            font-weight: 600;
+            font-size: 1.3rem;
+            color: var(--dark-text);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 60px;
+            right: 15px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+            max-width: 90%;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .notification.success {
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .notification.error {
+            border-left: 4px solid var(--danger-color);
+        }
+        
+        .notification.info {
+            border-left: 4px solid var(--info-color);
+        }
+        
+        /* Pagination */
+        .pagination {
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .page-link {
+            color: var(--primary-color);
+            border-radius: 5px;
+            margin: 0 2px;
+        }
+        
+        .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        /* Category Input Group */
+        .category-input-group {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .category-input-group label {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .category-input-group .input-group {
+            margin-bottom: 10px;
+        }
+        
+        .category-input-group .input-group-text {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+        
+        /* Branch Card Styles */
+        .branch-card {
+            border-left: 4px solid var(--secondary-color);
+            height: 100%;
+        }
+        
+        .branch-card .branch-name {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+        
+        .branch-card .branch-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .branch-card .branch-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        /* Stat Card Styles */
+        .stat-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .category-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .category-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        /* Sales List Styles - Updated */
+        .sales-list-card {
+            border-left: 4px solid var(--info-color);
+        }
+        
+        .sales-list-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .sales-list-actions .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .invoice-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: none;
+            margin-bottom: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .invoice-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .invoice-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: 600;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .invoice-body {
+            padding: 15px;
+        }
+        
+        .invoice-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .invoice-detail-label {
+            font-weight: 500;
+            color: #6c757d;
+        }
+        
+        .invoice-detail-value {
+            font-weight: 600;
+        }
+        
+        .invoice-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        /* Print Styles */
+        @media print {
+            .sidebar, .navbar, .mobile-menu-toggle, .btn, .pagination, .dashboard-tabs, .notification {
+                display: none !important;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+            
+            .card-header {
+                background: #f8f9fa !important;
+                color: var(--dark-text) !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-check-circle me-2"></i>
+            <span id="notification-message">Operation completed successfully!</span>
+        </div>
+    </div>
+    
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a class="navbar-brand" href="#" style="letter-spacing:2px; text-transform:uppercase; font-weight:800; font-size:1rem;">
+                <i class="fas fa-pills me-2"></i>D WATSON PHARMACY
+            </a>
+        </div>
+    </nav>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-section="categories">
+                    <i class="fas fa-tags"></i>Categories
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-section="sales">
+                    <i class="fas fa-shopping-cart"></i>Sales Entry
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-section="reports">
+                    <i class="fas fa-chart-bar"></i>Reports
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-section="branches">
+                    <i class="fas fa-store"></i>Branches
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-section="settings">
+                    <i class="fas fa-cog"></i>Settings
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="content-section active">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Sales Dashboard</h1>
+                <p class="dashboard-subtitle">Comprehensive overview of your pharmacy sales performance</p>
+            </div>
+            
+            <!-- Dashboard Tabs -->
+            <div class="dashboard-tabs">
+                <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="branch-tab" data-bs-toggle="tab" data-bs-target="#branch" type="button" role="tab" aria-controls="branch" aria-selected="false">Branch Filter</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="dashboardTabsContent">
+                    <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                        <!-- Empty content for overview tab -->
+                    </div>
+                    <div class="tab-pane fade" id="branch" role="tabpanel" aria-labelledby="branch-tab">
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Select Branch</label>
+                                <select class="form-select" id="dashboardBranchSelector">
+                                    <option value="">All Branches</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <button class="btn btn-primary w-100" id="applyBranchFilter">
+                                    <i class="fas fa-filter me-2"></i>Apply Filter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Category-Wise Breakdown - Updated -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="section-title mb-0">
+                        <i class="fas fa-th-large"></i>Category-Wise Breakdown
+                    </h2>
+                    <button class="btn btn-primary" id="refreshDashboardBtn">
+                        <i class="fas fa-sync-alt me-2"></i>Refresh
+                    </button>
+                </div>
+                <div class="row" id="categoryBreakdown">
+                    <!-- Category cards will be populated dynamically -->
+                </div>
+            </div>
+            
+            <!-- Sales & Cost Trends -->
+            <div class="mb-4">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-line"></i>Sales & Cost Trends
+                </h2>
+                <div class="filter-section">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" id="trendCategoryFilter">
+                                <option value="">All Categories</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Time Range</label>
+                            <select class="form-select" id="trendTimeFilter">
+                                <option value="7">Last 7 Days</option>
+                                <option value="30">Last 30 Days</option>
+                                <option value="90">Last 90 Days</option>
+                                <option value="365">Last Year</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button class="btn btn-primary w-100" id="updateTrendsBtn">
+                                <i class="fas fa-sync-alt me-2"></i>Update Trends
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="trendsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Branch Summary -->
+            <div class="mb-4">
+                <h2 class="section-title">
+                    <i class="fas fa-store"></i>Branch Summary
+                </h2>
+                <div class="row" id="branchSummary">
+                    <!-- Branch cards will be populated dynamically -->
+                </div>
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <h3 class="text-primary" id="grandTotalSales">PKR 0</h3>
+                                <p class="mb-0">Grand Total Sales</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h3 class="text-success" id="grandTotalCost">PKR 0</h3>
+                                <p class="mb-0">Grand Total Cost</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h3 class="text-info" id="grandTotalProfit">PKR 0</h3>
+                                <p class="mb-0">Grand Total Profit</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Categories Section -->
+        <div id="categories-section" class="content-section">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Category Management</h1>
+                <p class="dashboard-subtitle">Manage your product categories</p>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title mb-0">
+                    <i class="fas fa-tags"></i>Categories
+                </h2>
+                <button class="btn btn-primary" id="addCategoryBtn">
+                    <i class="fas fa-plus me-2"></i>Add Category
+                </button>
+            </div>
+            
+            <div class="row" id="categoriesContainer">
+                <!-- Category cards will be populated dynamically -->
+            </div>
+        </div>
+        
+        <!-- Sales Entry Section -->
+        <div id="sales-section" class="content-section">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Sales Entry</h1>
+                <p class="dashboard-subtitle">Enter daily sales data by category</p>
+            </div>
+            
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-outline-primary" id="viewSalesListBtn">
+                    <i class="fas fa-list me-2"></i>View Sales List
+                </button>
+            </div>
+            
+            <!-- Sales List Section (Initially Hidden) -->
+            <div id="salesListSection" style="display: none;">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Sales List</h5>
+                        <button class="btn btn-sm btn-secondary" id="hideSalesListBtn">
+                            <i class="fas fa-times me-1"></i>Hide
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <!-- Filter Section -->
+                        <div class="filter-section mb-3">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">From Date</label>
+                                    <input type="date" class="form-control" id="salesListDateFrom">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">To Date</label>
+                                    <input type="date" class="form-control" id="salesListDateTo">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Branch</label>
+                                    <select class="form-select" id="salesListBranch">
+                                        <option value="">All Branches</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button class="btn btn-primary w-100" id="filterSalesList">
+                                        <i class="fas fa-filter me-2"></i>Filter
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- View Toggle -->
+                        <div class="btn-group mb-3" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-primary active" id="cardViewBtn">
+                                <i class="fas fa-th me-1"></i>Card View
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="tableViewBtn">
+                                <i class="fas fa-table me-1"></i>Table View
+                            </button>
+                        </div>
+                        
+                        <!-- Card View (Default) -->
+                        <div id="salesCardView">
+                            <div class="row" id="salesInvoicesContainer">
+                                <!-- Invoice cards will be populated dynamically -->
+                            </div>
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination" id="salesInvoicesPagination">
+                                    <!-- Pagination will be populated dynamically -->
+                                </ul>
+                            </nav>
+                        </div>
+                        
+                        <!-- Table View (Hidden by default) -->
+                        <div id="salesTableView" style="display: none;">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="salesListTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Date</th>
+                                            <th>Category</th>
+                                            <th>Branch</th>
+                                            <th>Sales (PKR)</th>
+                                            <th>Cost (PKR)</th>
+                                            <th>Profit (PKR)</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="salesListTableBody">
+                                        <!-- Table rows will be populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination" id="salesListPagination">
+                                    <!-- Pagination will be populated dynamically -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Add Daily Sales</h5>
+                </div>
+                <div class="card-body">
+                    <form id="salesEntryForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="saleDate" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="saleDate" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="saleBranch" class="form-label">Branch</label>
+                                <select class="form-select" id="saleBranch" required>
+                                    <option value="" selected disabled>Select Branch</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <h5 class="mt-4 mb-3">Enter Sales by Category (PKR)</h5>
+                        <div id="categoryInputs">
+                            <!-- Category inputs will be populated dynamically -->
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-4 mb-3">
+                                <label for="totalSales" class="form-label">Total Sales (PKR)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">PKR</span>
+                                    <input type="number" class="form-control" id="totalSales" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="totalCost" class="form-label">Total Cost (PKR)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">PKR</span>
+                                    <input type="number" class="form-control" id="totalCost" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="totalProfit" class="form-label">Total Profit (PKR)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">PKR</span>
+                                    <input type="number" class="form-control" id="totalProfit" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <label for="saleNotes" class="form-label">Notes</label>
+                                <textarea class="form-control" id="saleNotes" rows="3"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="button" class="btn btn-secondary me-2" id="resetSalesForm">Reset</button>
+                            <button type="submit" class="btn btn-primary">Save Sale</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reports Section -->
+        <div id="reports-section" class="content-section">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Sales Reports</h1>
+                <p class="dashboard-subtitle">Generate and view sales reports</p>
+            </div>
+            
+            <div class="filter-section">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">From Date</label>
+                        <input type="date" class="form-control" id="reportDateFrom">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">To Date</label>
+                        <input type="date" class="form-control" id="reportDateTo">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Branch</label>
+                        <select class="form-select" id="reportBranch">
+                            <option value="">All Branches</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" id="generateReportBtn">
+                            <i class="fas fa-file-alt me-2"></i>Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title mb-0">Report Summary</h5>
+                        <button class="btn btn-primary" id="printReportBtn">
+                            <i class="fas fa-print me-2"></i>Print Report
+                        </button>
+                    </div>
+                    <div class="row" id="reportSummary">
+                        <!-- Report summary will be populated dynamically -->
+                    </div>
+                    
+                    <h5 class="card-title mt-4 mb-3">Detailed Report</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Total Sales (PKR)</th>
+                                    <th>Total Cost (PKR)</th>
+                                    <th>Total Profit (PKR)</th>
+                                    <th>Profit Margin</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody">
+                                <!-- Report table will be populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h5 class="card-title mt-4 mb-3">Sales Comparison</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Branch</th>
+                                    <th>Total Sales (PKR)</th>
+                                    <th>Total Cost (PKR)</th>
+                                    <th>Total Profit (PKR)</th>
+                                    <th>Profit Margin</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesComparisonTableBody">
+                                <!-- Sales comparison table will be populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Date Wise Data Section -->
+                    <h5 class="card-title mt-4 mb-3">Date Wise Data</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Branch</th>
+                                    <th>Category</th>
+                                    <th>Sales (PKR)</th>
+                                    <th>Cost (PKR)</th>
+                                    <th>Profit (PKR)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dateWiseTableBody">
+                                <!-- Date wise table will be populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Branches Section -->
+        <div id="branches-section" class="content-section">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Branch Management</h1>
+                <p class="dashboard-subtitle">Manage your pharmacy branches</p>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title mb-0">
+                    <i class="fas fa-store"></i>Branches
+                </h2>
+                <button class="btn btn-primary" id="addBranchBtn">
+                    <i class="fas fa-plus me-2"></i>Add Branch
+                </button>
+            </div>
+            
+            <div class="row" id="branchesContainer">
+                <!-- Branch cards will be populated dynamically -->
+            </div>
+        </div>
+        
+        <!-- Settings Section -->
+        <div id="settings-section" class="content-section">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Settings</h1>
+                <p class="dashboard-subtitle">Configure your dashboard preferences</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">General Settings</h5>
+                    <form id="settingsForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="companyName" class="form-label">Company Name</label>
+                                <input type="text" class="form-control" id="companyName" value="D.Watson Group of Pharmacy">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="currency" class="form-label">Currency</label>
+                                <select class="form-select" id="currency">
+                                    <option value="PKR" selected>Pakistani Rupee (PKR)</option>
+                                    <option value="USD">US Dollar (USD)</option>
+                                    <option value="EUR">Euro (EUR)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="dateFormat" class="form-label">Date Format</label>
+                                <select class="form-select" id="dateFormat">
+                                    <option value="DD/MM/YYYY" selected>DD/MM/YYYY</option>
+                                    <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                    <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="itemsPerPage" class="form-label">Items Per Page</label>
+                                <select class="form-select" id="itemsPerPage">
+                                    <option value="10" selected>10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Save Settings</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Data Management</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button class="btn btn-primary w-100" id="backupDataBtn">
+                                <i class="fas fa-download me-2"></i>Backup Data
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-secondary w-100" id="restoreDataBtn">
+                                <i class="fas fa-upload me-2"></i>Restore Data
+                            </button>
+                            <input type="file" id="restoreFile" accept=".json" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Category Modal -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="categoryForm">
+                        <div class="mb-3">
+                            <label for="categoryName" class="form-label">Category Name</label>
+                            <input type="text" class="form-control" id="categoryName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="categoryDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="categoryDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="categoryColor" class="form-label">Color</label>
+                            <select class="form-select" id="categoryColor">
+                                <option value="success">Green</option>
+                                <option value="primary">Blue</option>
+                                <option value="warning">Yellow</option>
+                                <option value="info">Cyan</option>
+                                <option value="danger">Red</option>
+                                <option value="secondary">Gray</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveCategoryBtn">Save Category</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Branch Modal -->
+    <div class="modal fade" id="addBranchModal" tabindex="-1" aria-labelledby="addBranchModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addBranchModalLabel">Add New Branch</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="branchForm">
+                        <div class="mb-3">
+                            <label for="branchName" class="form-label">Branch Name</label>
+                            <input type="text" class="form-control" id="branchName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="branchAddress" class="form-label">Address</label>
+                            <textarea class="form-control" id="branchAddress" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="branchPhone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="branchPhone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="branchEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="branchEmail">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveBranchBtn">Save Branch</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Sale Modal -->
+    <div class="modal fade" id="editSaleModal" tabindex="-1" aria-labelledby="editSaleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editSaleModalLabel">Edit Sale</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editSaleForm">
+                        <input type="hidden" id="editSaleId">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editSaleDate" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="editSaleDate" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editSaleBranch" class="form-label">Branch</label>
+                                <select class="form-select" id="editSaleBranch" required>
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editSaleCategory" class="form-label">Category</label>
+                                <select class="form-select" id="editSaleCategory" required>
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editSaleAmount" class="form-label">Sales Amount (PKR)</label>
+                                <input type="number" class="form-control" id="editSaleAmount" min="0" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editSaleCost" class="form-label">Cost Amount (PKR)</label>
+                            <input type="number" class="form-control" id="editSaleCost" min="0" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editSaleNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="editSaleNotes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="updateSaleBtn">Update Sale</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        // Initialize data storage
+        let salesData = JSON.parse(localStorage.getItem('salesData')) || [];
+		let branchesData = JSON.parse(localStorage.getItem('branchesData')) || [];
+        
+		let categoriesData = JSON.parse(localStorage.getItem('categoriesData')) || [];
+        
+        let settingsData = JSON.parse(localStorage.getItem('settingsData')) || {
+            companyName: 'D.Watson Group of Pharmacy',
+            currency: 'PKR',
+            dateFormat: 'DD/MM/YYYY',
+            itemsPerPage: 10
+        };
+        
+		// Initialize dashboard
+		document.addEventListener('DOMContentLoaded', async function() {
+			// Setup event listeners
+            setupEventListeners();
+            
+			// Load branches from server first, then populate selectors
+			await loadBranches();
+			populateBranchSelectors();
+            populateCategorySelectors();
+            populateCategoryFilters();
+            loadDashboard();
+            loadCategories();
+            loadSettings();
+            generateCategoryInputs();
+            
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('saleDate').value = today;
+        });
+        
+        // Generate sample data
+        function generateSampleData() {
+            const today = new Date();
+            
+            for (let i = 0; i < 100; i++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - Math.floor(Math.random() * 90));
+                
+                const branch = branchesData[Math.floor(Math.random() * branchesData.length)];
+                const category = categoriesData[Math.floor(Math.random() * categoriesData.length)];
+                const salesAmount = Math.floor(Math.random() * 10000) + 1000;
+                const costAmount = Math.floor(salesAmount * (0.6 + Math.random() * 0.3));
+                
+                const sale = {
+                    id: Date.now() + i,
+                    date: date.toISOString().split('T')[0],
+                    branchId: branch.id,
+                    branchName: branch.name,
+                    categoryId: category.id,
+                    categoryName: category.name,
+                    salesAmount: salesAmount,
+                    costAmount: costAmount,
+                    profit: salesAmount - costAmount,
+                    notes: `Sample sale ${i + 1}`
+                };
+                
+                salesData.push(sale);
+            }
+            
+            localStorage.setItem('salesData', JSON.stringify(salesData));
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Mobile menu toggle
+            document.getElementById('mobileMenuToggle').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('active');
+                document.getElementById('sidebarOverlay').classList.toggle('active');
+            });
+            
+            // Close sidebar when clicking overlay
+            document.getElementById('sidebarOverlay').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.remove('active');
+                this.classList.remove('active');
+            });
+            
+            // Navigation
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.getAttribute('data-section');
+                    showSection(section);
+                    
+                    // Update active state
+                    document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Close mobile sidebar after navigation
+                    if (window.innerWidth <= 768) {
+                        document.getElementById('sidebar').classList.remove('active');
+                        document.getElementById('sidebarOverlay').classList.remove('active');
+                    }
+                });
+            });
+            
+            // Dashboard branch filter
+            document.getElementById('applyBranchFilter').addEventListener('click', function() {
+                loadDashboard();
+            });
+            
+            // Refresh dashboard
+            document.getElementById('refreshDashboardBtn').addEventListener('click', function() {
+                loadDashboard();
+                showNotification('Dashboard refreshed successfully!', 'success');
+            });
+            
+            // Update trends button
+            document.getElementById('updateTrendsBtn').addEventListener('click', function() {
+                updateTrendsChart();
+                showNotification('Trends updated successfully!', 'success');
+            });
+            
+            // Sales entry form
+            document.getElementById('salesEntryForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveSalesEntry();
+            });
+            
+            // Reset sales form
+            document.getElementById('resetSalesForm').addEventListener('click', function() {
+                document.getElementById('salesEntryForm').reset();
+                document.getElementById('totalSales').value = '';
+                document.getElementById('totalCost').value = '';
+                document.getElementById('totalProfit').value = '';
+            });
+            
+            // View sales list button
+            document.getElementById('viewSalesListBtn').addEventListener('click', function() {
+                document.getElementById('salesListSection').style.display = 'block';
+                // Initialize sales list if not already loaded
+                if (document.getElementById('salesInvoicesContainer').children.length === 0) {
+                    loadSalesList();
+                }
+            });
+            
+            // Hide sales list button
+            document.getElementById('hideSalesListBtn').addEventListener('click', function() {
+                document.getElementById('salesListSection').style.display = 'none';
+            });
+            
+            // Generate report button
+            document.getElementById('generateReportBtn').addEventListener('click', function() {
+                generateReport();
+                showNotification('Report generated successfully!', 'success');
+            });
+            
+            // Print report button
+            document.getElementById('printReportBtn').addEventListener('click', function() {
+                window.print();
+            });
+            
+            // Filter sales list
+            document.getElementById('filterSalesList').addEventListener('click', function() {
+                loadSalesList();
+            });
+            
+            // Add category button
+            document.getElementById('addCategoryBtn').addEventListener('click', function() {
+                const modal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
+                modal.show();
+            });
+            
+            // Save category button
+            document.getElementById('saveCategoryBtn').addEventListener('click', function() {
+                if (document.getElementById('categoryForm').checkValidity()) {
+                    saveCategory();
+                } else {
+                    document.getElementById('categoryForm').reportValidity();
+                }
+            });
+            
+            // Add branch button
+            document.getElementById('addBranchBtn').addEventListener('click', function() {
+                const modal = new bootstrap.Modal(document.getElementById('addBranchModal'));
+                modal.show();
+            });
+            
+            // Save branch button
+            document.getElementById('saveBranchBtn').addEventListener('click', function() {
+                if (document.getElementById('branchForm').checkValidity()) {
+                    saveBranch();
+                } else {
+                    document.getElementById('branchForm').reportValidity();
+                }
+            });
+            
+            // Update sale button
+            document.getElementById('updateSaleBtn').addEventListener('click', function() {
+                if (document.getElementById('editSaleForm').checkValidity()) {
+                    updateSale();
+                } else {
+                    document.getElementById('editSaleForm').reportValidity();
+                }
+            });
+            
+            // Settings form
+            document.getElementById('settingsForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveSettings();
+            });
+            
+            // Backup and restore
+            document.getElementById('backupDataBtn').addEventListener('click', backupData);
+            document.getElementById('restoreDataBtn').addEventListener('click', function() {
+                document.getElementById('restoreFile').click();
+            });
+            document.getElementById('restoreFile').addEventListener('change', restoreData);
+            
+            // Sales list view toggle
+            document.getElementById('cardViewBtn').addEventListener('click', function() {
+                document.getElementById('salesCardView').style.display = 'block';
+                document.getElementById('salesTableView').style.display = 'none';
+                document.getElementById('cardViewBtn').classList.add('active');
+                document.getElementById('tableViewBtn').classList.remove('active');
+            });
+            
+            document.getElementById('tableViewBtn').addEventListener('click', function() {
+                document.getElementById('salesCardView').style.display = 'none';
+                document.getElementById('salesTableView').style.display = 'block';
+                document.getElementById('tableViewBtn').classList.add('active');
+                document.getElementById('cardViewBtn').classList.remove('active');
+            });
+        }
+        
+        // Show section
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId + '-section').classList.add('active');
+            
+            // Initialize section-specific content
+            switch(sectionId) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'sales':
+                    generateCategoryInputs();
+                    break;
+            }
+        }
+        
+        // Populate branch selectors
+        function populateBranchSelectors() {
+            const selectors = [
+                'dashboardBranchSelector',
+                'saleBranch',
+                'reportBranch',
+                'salesListBranch',
+                'editSaleBranch'
+            ];
+            
+            selectors.forEach(selectorId => {
+                const selector = document.getElementById(selectorId);
+                if (selector) {
+                    // Keep the first option (All Branches or placeholder)
+                    const firstOption = selector.options[0];
+                    selector.innerHTML = '';
+                    if (firstOption) {
+                        selector.appendChild(firstOption);
+                    }
+                    
+                    // Add branch options
+                    branchesData.forEach(branch => {
+                        const option = document.createElement('option');
+                        option.value = branch.id;
+                        option.textContent = branch.name;
+                        selector.appendChild(option);
+                    });
+                }
+            });
+        }
+        
+        // Populate category selectors
+        function populateCategorySelectors() {
+            const selectors = [
+                'trendCategoryFilter',
+                'editSaleCategory'
+            ];
+            
+            selectors.forEach(selectorId => {
+                const selector = document.getElementById(selectorId);
+                if (selector) {
+                    // Keep the first option
+                    const firstOption = selector.options[0];
+                    selector.innerHTML = '';
+                    if (firstOption) {
+                        selector.appendChild(firstOption);
+                    }
+                    
+                    // Add category options
+                    categoriesData.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.id;
+                        option.textContent = category.name;
+                        selector.appendChild(option);
+                    });
+                }
+            });
+        }
+        
+        // Populate category filters
+        function populateCategoryFilters() {
+            // This will be used if we add category filters elsewhere
+        }
+        
+        // Generate category inputs for sales entry
+        function generateCategoryInputs() {
+            const container = document.getElementById('categoryInputs');
+            container.innerHTML = '';
+            
+            categoriesData.forEach(category => {
+                const inputGroup = document.createElement('div');
+                inputGroup.className = 'category-input-group';
+                inputGroup.innerHTML = `
+                    <label>${category.name}</label>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <div class="input-group">
+                                <span class="input-group-text">Sales</span>
+                                <input type="number" class="form-control category-sales" 
+                                       data-category="${category.id}" min="0" step="0.01" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <div class="input-group">
+                                <span class="input-group-text">Cost</span>
+                                <input type="number" class="form-control category-cost" 
+                                       data-category="${category.id}" min="0" step="0.01" placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(inputGroup);
+            });
+            
+            // Add event listeners for real-time calculation
+            container.querySelectorAll('.category-sales, .category-cost').forEach(input => {
+                input.addEventListener('input', calculateSalesTotals);
+            });
+
+            // Auto-calc cost from sales using defaultCostPercent when user types sales
+            container.querySelectorAll('.category-sales').forEach(input => {
+                input.addEventListener('input', function() {
+                    const pct = Number((settingsData && settingsData.defaultCostPercent) ?? 70);
+                    const salesVal = parseFloat(this.value) || 0;
+                    const costInput = container.querySelector(`.category-cost[data-category="${this.getAttribute('data-category')}"]`);
+                    if (costInput && !costInput.matches(':focus')) {
+                        costInput.value = (salesVal * pct / 100).toFixed(2);
+                    }
+                    calculateSalesTotals();
+                });
+            });
+        }
+        
+        // Load dashboard
+        function loadDashboard() {
+            const branchFilter = document.getElementById('dashboardBranchSelector').value;
+            
+            loadCategoryBreakdown(branchFilter);
+            loadBranchSummary(branchFilter);
+            initializeTrendsChart();
+        }
+        
+        // Load category breakdown - Updated
+        function loadCategoryBreakdown(branchFilter = '') {
+            const container = document.getElementById('categoryBreakdown');
+            container.innerHTML = '';
+            
+            // Filter data by branch if selected
+            let filteredData = salesData;
+            if (branchFilter) {
+                filteredData = salesData.filter(sale => String(sale.branchId) === String(branchFilter));
+            }
+            
+            // Calculate totals by category
+            const categoryData = {};
+            
+            categoriesData.forEach(category => {
+                const categorySales = filteredData.filter(sale => sale.categoryId === category.id);
+                const totalSales = categorySales.reduce((sum, sale) => sum + sale.salesAmount, 0);
+                const totalCost = categorySales.reduce((sum, sale) => sum + sale.costAmount, 0);
+                const totalProfit = totalSales - totalCost;
+                const profitMargin = totalSales > 0 ? (totalProfit / totalSales * 100) : 0;
+                
+                categoryData[category.id] = {
+                    name: category.name,
+                    totalSales,
+                    totalCost,
+                    totalProfit,
+                    profitMargin
+                };
+            });
+            
+            // Calculate grand totals
+            const grandTotalSales = Object.values(categoryData).reduce((sum, data) => sum + data.totalSales, 0);
+            const grandTotalCost = Object.values(categoryData).reduce((sum, data) => sum + data.totalCost, 0);
+            const grandTotalProfit = grandTotalSales - grandTotalCost;
+            const grandProfitMargin = grandTotalSales > 0 ? (grandTotalProfit / grandTotalSales * 100) : 0;
+            
+            // Create category cards with updated layout
+            Object.values(categoryData).forEach(data => {
+                const card = document.createElement('div');
+                card.className = 'col-lg-3 col-md-6 mb-4'; // Changed to col-lg-3 for 4 columns
+                
+                card.innerHTML = `
+                    <div class="category-card">
+                        <div class="category-header">
+                            ${data.name}
+                        </div>
+                        <div class="category-body">
+                            <div class="category-metrics">
+                                <div class="metric-row sales">
+                                    <span class="metric-label">Total Sales</span>
+                                    <span class="metric-value">PKR ${data.totalSales.toLocaleString()}</span>
+                                </div>
+                                <div class="metric-row cost">
+                                    <span class="metric-label">Total Cost</span>
+                                    <span class="metric-value">PKR ${data.totalCost.toLocaleString()}</span>
+                                </div>
+                                <div class="metric-row profit">
+                                    <span class="metric-label">Total Profit</span>
+                                    <span class="metric-value">PKR ${data.totalProfit.toLocaleString()}</span>
+                                </div>
+                            </div>
+                            <div class="category-footer">
+                                <span class="margin-badge ${data.profitMargin >= 0 ? 'positive' : 'negative'}">
+                                    ${data.profitMargin.toFixed(1)}% Margin
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            // Add grand total card
+            const totalCard = document.createElement('div');
+            totalCard.className = 'col-lg-3 col-md-6 mb-4'; // Changed to col-lg-3 for 4 columns
+            totalCard.innerHTML = `
+                <div class="category-card grand-total">
+                    <div class="category-header">
+                        Grand Total
+                    </div>
+                    <div class="category-body">
+                        <div class="category-metrics">
+                            <div class="metric-row sales">
+                                <span class="metric-label">Total Sales</span>
+                                <span class="metric-value">PKR ${grandTotalSales.toLocaleString()}</span>
+                            </div>
+                            <div class="metric-row cost">
+                                <span class="metric-label">Total Cost</span>
+                                <span class="metric-value">PKR ${grandTotalCost.toLocaleString()}</span>
+                            </div>
+                            <div class="metric-row profit">
+                                <span class="metric-label">Total Profit</span>
+                                <span class="metric-value">PKR ${grandTotalProfit.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <div class="category-footer">
+                            <span class="margin-badge ${grandProfitMargin >= 0 ? 'positive' : 'negative'}">
+                                ${grandProfitMargin.toFixed(1)}% Margin
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(totalCard);
+        }
+        
+        // Load branch summary
+        function loadBranchSummary(branchFilter = '') {
+            const container = document.getElementById('branchSummary');
+            container.innerHTML = '';
+            
+            // Calculate totals by branch and category
+            const branchData = {};
+            
+            branchesData.forEach(branch => {
+                if (branchFilter && branch.id != branchFilter) return;
+                
+                const branchSales = salesData.filter(sale => String(sale.branchId) === String(branch.id));
+                const totalSales = branchSales.reduce((sum, sale) => sum + sale.salesAmount, 0);
+                const totalCost = branchSales.reduce((sum, sale) => sum + sale.costAmount, 0);
+                const totalProfit = totalSales - totalCost;
+                const profitMargin = totalSales > 0 ? (totalProfit / totalSales * 100) : 0;
+                
+                // Initialize category data for this branch
+                const categoryDetails = {};
+                
+                categoriesData.forEach(category => {
+                    const categorySales = branchSales.filter(sale => sale.categoryId === category.id);
+                    const catSales = categorySales.reduce((sum, sale) => sum + sale.salesAmount, 0);
+                    const catCost = categorySales.reduce((sum, sale) => sum + sale.costAmount, 0);
+                    const catProfit = catSales - catCost;
+                    const catMargin = catSales > 0 ? (catProfit / catSales * 100) : 0;
+                    
+                    categoryDetails[category.id] = {
+                        name: category.name,
+                        sales: catSales,
+                        cost: catCost,
+                        profit: catProfit,
+                        margin: catMargin
+                    };
+                });
+                
+                branchData[branch.id] = {
+                    name: branch.name,
+                    totalSales,
+                    totalCost,
+                    totalProfit,
+                    profitMargin,
+                    categories: categoryDetails
+                };
+            });
+            
+            // Calculate grand totals
+            const grandTotalSales = Object.values(branchData).reduce((sum, data) => sum + data.totalSales, 0);
+            const grandTotalCost = Object.values(branchData).reduce((sum, data) => sum + data.totalCost, 0);
+            const grandTotalProfit = grandTotalSales - grandTotalCost;
+            
+            // Update grand total display
+            document.getElementById('grandTotalSales').textContent = `PKR ${grandTotalSales.toLocaleString()}`;
+            document.getElementById('grandTotalCost').textContent = `PKR ${grandTotalCost.toLocaleString()}`;
+            document.getElementById('grandTotalProfit').textContent = `PKR ${grandTotalProfit.toLocaleString()}`;
+            
+            // Create branch cards with category breakdown
+            Object.values(branchData).forEach(data => {
+                const card = document.createElement('div');
+                card.className = 'col-md-12 mb-3';
+                
+                let categoryHtml = '';
+                Object.values(data.categories).forEach(cat => {
+                    categoryHtml += `
+                        <tr>
+                            <td>${cat.name}</td>
+                            <td>PKR ${cat.sales.toLocaleString()}</td>
+                            <td>PKR ${cat.cost.toLocaleString()}</td>
+                            <td class="${cat.profit >= 0 ? 'text-success' : 'text-danger'}">
+                                PKR ${cat.profit.toLocaleString()}
+                            </td>
+                            <td>
+                                <span class="badge ${cat.margin >= 0 ? 'bg-success' : 'bg-danger'}">
+                                    ${cat.margin.toFixed(1)}%
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                card.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">${data.name}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <div class="card stat-card">
+                                        <div class="card-body text-center">
+                                            <div class="category-value text-primary">PKR ${data.totalSales.toLocaleString()}</div>
+                                            <div class="category-label">Total Sales</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card stat-card">
+                                        <div class="card-body text-center">
+                                            <div class="category-value text-success">PKR ${data.totalCost.toLocaleString()}</div>
+                                            <div class="category-label">Total Cost</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card stat-card">
+                                        <div class="card-body text-center">
+                                            <div class="category-value text-info">PKR ${data.totalProfit.toLocaleString()}</div>
+                                            <div class="category-label">Total Profit</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card stat-card">
+                                        <div class="card-body text-center">
+                                            <div class="category-value text-warning">${data.profitMargin.toFixed(1)}%</div>
+                                            <div class="category-label">Profit Margin</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h6 class="mb-3">Category Breakdown</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Sales (PKR)</th>
+                                            <th>Cost (PKR)</th>
+                                            <th>Profit (PKR)</th>
+                                            <th>Margin</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${categoryHtml}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        // Load sales list - Updated
+        function loadSalesList(page = 1, perPage = 10) {
+            // Get filter values
+            const dateFrom = document.getElementById('salesListDateFrom').value;
+            const dateTo = document.getElementById('salesListDateTo').value;
+            const branchId = document.getElementById('salesListBranch').value;
+            
+            // Filter data based on criteria
+            let filteredData = salesData;
+            
+            if (dateFrom) {
+                filteredData = filteredData.filter(sale => sale.date >= dateFrom);
+            }
+            
+            if (dateTo) {
+                filteredData = filteredData.filter(sale => sale.date <= dateTo);
+            }
+            
+            if (branchId) {
+                filteredData = filteredData.filter(sale => String(sale.branchId) === String(branchId));
+            }
+            
+            // Sort sales by date (newest first)
+            const sortedSales = [...filteredData].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Calculate pagination
+            const startIndex = (page - 1) * perPage;
+            const endIndex = startIndex + perPage;
+            const paginatedSales = sortedSales.slice(startIndex, endIndex);
+            
+            // Load sales invoices (card view)
+            loadSalesInvoices(paginatedSales);
+            
+            // Load sales table (table view)
+            loadSalesTable(paginatedSales);
+            
+            // Update pagination
+            updatePagination(sortedSales.length, page, perPage, 'salesInvoicesPagination', loadSalesList);
+            updatePagination(sortedSales.length, page, perPage, 'salesListPagination', loadSalesList);
+        }
+        
+        // Load sales invoices (card view) - New function
+        function loadSalesInvoices(sales) {
+            const container = document.getElementById('salesInvoicesContainer');
+            container.innerHTML = '';
+            
+            sales.forEach(sale => {
+                const card = document.createElement('div');
+                card.className = 'col-md-6 col-lg-4 mb-3';
+                
+                card.innerHTML = `
+                    <div class="invoice-card">
+                        <div class="invoice-header">
+                            <span>Invoice #${sale.id}</span>
+                            <span>${sale.date}</span>
+                        </div>
+                        <div class="invoice-body">
+                            <div class="invoice-details">
+                                <span class="invoice-detail-label">Branch:</span>
+                                <span class="invoice-detail-value">${sale.branchName}</span>
+                            </div>
+                            <div class="invoice-details">
+                                <span class="invoice-detail-label">Category:</span>
+                                <span class="invoice-detail-value">${sale.categoryName}</span>
+                            </div>
+                            <div class="invoice-details">
+                                <span class="invoice-detail-label">Sales:</span>
+                                <span class="invoice-detail-value">PKR ${sale.salesAmount.toLocaleString()}</span>
+                            </div>
+                            <div class="invoice-details">
+                                <span class="invoice-detail-label">Cost:</span>
+                                <span class="invoice-detail-value">PKR ${sale.costAmount.toLocaleString()}</span>
+                            </div>
+                            <div class="invoice-details">
+                                <span class="invoice-detail-label">Profit:</span>
+                                <span class="invoice-detail-value ${sale.profit >= 0 ? 'text-success' : 'text-danger'}">
+                                    PKR ${sale.profit.toLocaleString()}
+                                </span>
+                            </div>
+                            <div class="invoice-actions">
+                                <button class="btn btn-sm btn-primary" onclick="editSale(${sale.id})">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteSale(${sale.id})">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        // Load sales table (table view) - New function
+        function loadSalesTable(sales) {
+            const tableBody = document.getElementById('salesListTableBody');
+            tableBody.innerHTML = '';
+            
+            sales.forEach(sale => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${sale.id}</td>
+                    <td>${sale.date}</td>
+                    <td>${sale.categoryName}</td>
+                    <td>${sale.branchName}</td>
+                    <td>PKR ${sale.salesAmount.toLocaleString()}</td>
+                    <td>PKR ${sale.costAmount.toLocaleString()}</td>
+                    <td class="${sale.profit >= 0 ? 'text-success' : 'text-danger'}">
+                        PKR ${sale.profit.toLocaleString()}
+                    </td>
+                    <td>
+                        <div class="sales-list-actions">
+                            <button class="btn btn-sm btn-primary" onclick="editSale(${sale.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteSale(${sale.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Update pagination
+        function updatePagination(totalItems, currentPage, perPage, paginationId, callback, ...args) {
+            const pagination = document.getElementById(paginationId);
+            pagination.innerHTML = '';
+            
+            const totalPages = Math.ceil(totalItems / perPage);
+            
+            if (totalPages <= 1) return;
+            
+            // Previous button
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a>`;
+            pagination.appendChild(prevLi);
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                    const li = document.createElement('li');
+                    li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                    li.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
+                    pagination.appendChild(li);
+                } else if (i === currentPage - 2 || i === currentPage + 2) {
+                    const li = document.createElement('li');
+                    li.className = 'page-item disabled';
+                    li.innerHTML = `<span class="page-link">...</span>`;
+                    pagination.appendChild(li);
+                }
+            }
+            
+            // Next button
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" data-page="${currentPage + 1}">Next</a>`;
+            pagination.appendChild(nextLi);
+            
+            // Add click event listeners
+            pagination.querySelectorAll('.page-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = parseInt(this.getAttribute('data-page'));
+                    if (page > 0 && page <= totalPages) {
+                        callback(...args, page, perPage);
+                    }
+                });
+            });
+        }
+        
+        // Initialize trends chart
+        let trendsChart;
+        
+        function initializeTrendsChart() {
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            
+            trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Sales (PKR)',
+                            data: [],
+                            backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Cost (PKR)',
+                            data: [],
+                            backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                            borderColor: 'rgba(220, 53, 69, 1)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Profit (PKR)',
+                            data: [],
+                            backgroundColor: 'rgba(23, 162, 184, 0.2)',
+                            borderColor: 'rgba(23, 162, 184, 1)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'PKR ' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': PKR ' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            updateTrendsChart();
+        }
+        
+        // Update trends chart
+        function updateTrendsChart() {
+            const categoryFilter = document.getElementById('trendCategoryFilter').value;
+            const timeFilter = parseInt(document.getElementById('trendTimeFilter').value);
+            const branchFilter = document.getElementById('dashboardBranchSelector').value;
+            
+            // Filter data based on selected criteria
+            let filteredData = salesData;
+            
+            if (branchFilter) {
+                filteredData = salesData.filter(sale => String(sale.branchId) === String(branchFilter));
+            }
+            
+            if (categoryFilter) {
+                filteredData = filteredData.filter(sale => sale.categoryId == categoryFilter);
+            }
+            
+            // Get date range
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - timeFilter);
+            
+            // Filter by date range
+            filteredData = filteredData.filter(sale => {
+                const saleDate = new Date(sale.date);
+                return saleDate >= startDate && saleDate <= endDate;
+            });
+            
+            // Group data by day
+            const groupedData = {};
+            
+            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                const dateStr = d.toISOString().split('T')[0];
+                groupedData[dateStr] = {
+                    sales: 0,
+                    cost: 0,
+                    profit: 0
+                };
+            }
+            
+            filteredData.forEach(sale => {
+                if (groupedData[sale.date]) {
+                    groupedData[sale.date].sales += sale.salesAmount;
+                    groupedData[sale.date].cost += sale.costAmount;
+                    groupedData[sale.date].profit += sale.profit;
+                }
+            });
+            
+            // Prepare chart data
+            const labels = Object.keys(groupedData);
+            const salesDataArray = labels.map(date => groupedData[date].sales);
+            const costDataArray = labels.map(date => groupedData[date].cost);
+            const profitDataArray = labels.map(date => groupedData[date].profit);
+            
+            // Update chart
+            trendsChart.data.labels = labels;
+            trendsChart.data.datasets[0].data = salesDataArray;
+            trendsChart.data.datasets[1].data = costDataArray;
+            trendsChart.data.datasets[2].data = profitDataArray;
+            trendsChart.update();
+        }
+        
+        // Calculate sales totals
+        function calculateSalesTotals() {
+            let totalSales = 0;
+            let totalCost = 0;
+            
+            document.querySelectorAll('.category-sales').forEach(input => {
+                totalSales += parseFloat(input.value) || 0;
+            });
+            
+            document.querySelectorAll('.category-cost').forEach(input => {
+                totalCost += parseFloat(input.value) || 0;
+            });
+            
+            const totalProfit = totalSales - totalCost;
+            
+            document.getElementById('totalSales').value = totalSales.toFixed(2);
+            document.getElementById('totalCost').value = totalCost.toFixed(2);
+            document.getElementById('totalProfit').value = totalProfit.toFixed(2);
+        }
+        
+        // Save sales entry
+        function saveSalesEntry() {
+            const sale = {
+                id: Date.now(),
+                date: document.getElementById('saleDate').value,
+                branchId: document.getElementById('saleBranch').value,
+                branchName: document.getElementById('saleBranch').options[document.getElementById('saleBranch').selectedIndex].text,
+                totalSales: parseFloat(document.getElementById('totalSales').value) || 0,
+                totalCost: parseFloat(document.getElementById('totalCost').value) || 0,
+                totalProfit: parseFloat(document.getElementById('totalProfit').value) || 0,
+                notes: document.getElementById('saleNotes').value,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Add individual category sales to sales data
+            const categorySales = [];
+            
+            document.querySelectorAll('.category-sales').forEach(input => {
+                const categoryId = parseInt(input.getAttribute('data-category'));
+                const sales = parseFloat(input.value) || 0;
+                const costInput = document.querySelector(`.category-cost[data-category="${categoryId}"]`);
+                const cost = parseFloat(costInput.value) || 0;
+                
+                if (sales > 0) {
+                    const category = categoriesData.find(c => c.id === categoryId);
+                    categorySales.push({
+                        id: Date.now() + Math.random(),
+                        date: sale.date,
+                        branchId: sale.branchId,
+                        branchName: sale.branchName,
+                        categoryId: categoryId,
+                        categoryName: category.name,
+                        salesAmount: sales,
+                        costAmount: cost,
+                        profit: sales - cost,
+                        notes: sale.notes,
+                        createdAt: sale.createdAt
+                    });
+                }
+            });
+            
+            // Add all category sales to the main sales data
+            categorySales.forEach(cs => {
+                salesData.push(cs);
+            });
+            
+            localStorage.setItem('salesData', JSON.stringify(salesData));
+            
+            // Reset form
+            document.getElementById('salesEntryForm').reset();
+            document.getElementById('totalSales').value = '';
+            document.getElementById('totalCost').value = '';
+            document.getElementById('totalProfit').value = '';
+            
+            // Set today's date again
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('saleDate').value = today;
+            
+            showNotification('Sales entry saved successfully!', 'success');
+            
+            // Update dashboard if we're on dashboard
+            if (document.getElementById('dashboard-section').classList.contains('active')) {
+                loadDashboard();
+            }
+            
+            // Refresh sales list if it's visible
+            if (document.getElementById('salesInvoicesContainer').children.length > 0) {
+                loadSalesList();
+            }
+        }
+        
+        // Edit sale
+        function editSale(id) {
+            const sale = salesData.find(s => s.id === id);
+            if (sale) {
+                // Populate form with sale data
+                document.getElementById('editSaleId').value = sale.id;
+                document.getElementById('editSaleDate').value = sale.date;
+                document.getElementById('editSaleBranch').value = sale.branchId;
+                document.getElementById('editSaleCategory').value = sale.categoryId;
+                document.getElementById('editSaleAmount').value = sale.salesAmount;
+                document.getElementById('editSaleCost').value = sale.costAmount;
+                document.getElementById('editSaleNotes').value = sale.notes || '';
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('editSaleModal'));
+                modal.show();
+            }
+        }
+        
+        // Update sale
+        function updateSale() {
+            const id = parseInt(document.getElementById('editSaleId').value);
+            const saleIndex = salesData.findIndex(s => s.id === id);
+            
+            if (saleIndex !== -1) {
+                // Get branch and category names
+                const branch = branchesData.find(b => String(b.id) === String(document.getElementById('editSaleBranch').value));
+                const category = categoriesData.find(c => c.id === parseInt(document.getElementById('editSaleCategory').value));
+                
+                // Update sale data
+                salesData[saleIndex] = {
+                    id: id,
+                    date: document.getElementById('editSaleDate').value,
+                    branchId: document.getElementById('editSaleBranch').value,
+                    branchName: branch ? branch.name : 'Unknown',
+                    categoryId: parseInt(document.getElementById('editSaleCategory').value),
+                    categoryName: category ? category.name : 'Unknown',
+                    salesAmount: parseFloat(document.getElementById('editSaleAmount').value),
+                    costAmount: parseFloat(document.getElementById('editSaleCost').value),
+                    profit: parseFloat(document.getElementById('editSaleAmount').value) - parseFloat(document.getElementById('editSaleCost').value),
+                    notes: document.getElementById('editSaleNotes').value,
+                    createdAt: salesData[saleIndex].createdAt
+                };
+                
+                // Save to localStorage
+                localStorage.setItem('salesData', JSON.stringify(salesData));
+                
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('editSaleModal')).hide();
+                
+                // Show notification
+                showNotification('Sale updated successfully!', 'success');
+                
+                // Refresh sales list if it's visible
+                if (document.getElementById('salesInvoicesContainer').children.length > 0) {
+                    loadSalesList();
+                }
+                
+                // Update dashboard if we're on dashboard
+                if (document.getElementById('dashboard-section').classList.contains('active')) {
+                    loadDashboard();
+                }
+            }
+        }
+        
+        // Delete sale
+        function deleteSale(id) {
+            if (confirm('Are you sure you want to delete this sale?')) {
+                salesData = salesData.filter(s => s.id !== id);
+                localStorage.setItem('salesData', JSON.stringify(salesData));
+                
+                showNotification('Sale deleted successfully!', 'success');
+                
+                // Refresh sales list if it's visible
+                if (document.getElementById('salesInvoicesContainer').children.length > 0) {
+                    loadSalesList();
+                }
+                
+                // Update dashboard if we're on dashboard
+                if (document.getElementById('dashboard-section').classList.contains('active')) {
+                    loadDashboard();
+                }
+            }
+        }
+        
+        // Load categories
+        function loadCategories() {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = '';
+            
+            categoriesData.forEach(category => {
+                const card = document.createElement('div');
+                card.className = 'col-md-4 mb-3';
+                
+                const categorySales = salesData.filter(sale => sale.categoryId === category.id);
+                const totalSales = categorySales.reduce((sum, sale) => sum + sale.salesAmount, 0);
+                
+                card.innerHTML = `
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="card-title">${category.name}</h5>
+                                    <p class="card-text text-muted">${category.description}</p>
+                                </div>
+                                <span class="badge bg-${category.color}">${totalSales.toLocaleString()} Sales</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editCategory(${category.id})">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${category.id})">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        // Save category
+        function saveCategory() {
+            const category = {
+                id: Date.now(),
+                name: document.getElementById('categoryName').value,
+                description: document.getElementById('categoryDescription').value,
+                color: document.getElementById('categoryColor').value
+            };
+            
+            categoriesData.push(category);
+            localStorage.setItem('categoriesData', JSON.stringify(categoriesData));
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('addCategoryModal')).hide();
+            
+            // Reset form
+            document.getElementById('categoryForm').reset();
+            
+            // Show notification
+            showNotification('Category saved successfully!', 'success');
+            
+            // Update selectors and inputs
+            populateCategorySelectors();
+            generateCategoryInputs();
+            
+            // Reload categories and dashboard
+            loadCategories();
+            loadDashboard();
+        }
+        
+        // Edit category
+        function editCategory(id) {
+            const category = categoriesData.find(c => c.id === id);
+            if (category) {
+                document.getElementById('categoryName').value = category.name;
+                document.getElementById('categoryDescription').value = category.description;
+                document.getElementById('categoryColor').value = category.color;
+                
+                // Change save button to update
+                const saveBtn = document.getElementById('saveCategoryBtn');
+                saveBtn.textContent = 'Update Category';
+                saveBtn.onclick = function() {
+                    updateCategory(id);
+                };
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
+                modal.show();
+            }
+        }
+        
+        // Update category
+        function updateCategory(id) {
+            const categoryIndex = categoriesData.findIndex(c => c.id === id);
+            if (categoryIndex !== -1) {
+                categoriesData[categoryIndex] = {
+                    id: id,
+                    name: document.getElementById('categoryName').value,
+                    description: document.getElementById('categoryDescription').value,
+                    color: document.getElementById('categoryColor').value
+                };
+                
+                localStorage.setItem('categoriesData', JSON.stringify(categoriesData));
+                
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('addCategoryModal')).hide();
+                
+                // Reset form
+                document.getElementById('categoryForm').reset();
+                
+                // Reset save button
+                const saveBtn = document.getElementById('saveCategoryBtn');
+                saveBtn.textContent = 'Save Category';
+                saveBtn.onclick = saveCategory;
+                
+                // Show notification
+                showNotification('Category updated successfully!', 'success');
+                
+                // Update selectors and inputs
+                populateCategorySelectors();
+                generateCategoryInputs();
+                
+                // Reload categories and dashboard
+                loadCategories();
+                loadDashboard();
+            }
+        }
+        
+        // Delete category
+        function deleteCategory(id) {
+            if (confirm('Are you sure you want to delete this category? This will also delete all sales data for this category.')) {
+                categoriesData = categoriesData.filter(c => c.id !== id);
+                salesData = salesData.filter(s => s.categoryId !== id);
+                
+                localStorage.setItem('categoriesData', JSON.stringify(categoriesData));
+                localStorage.setItem('salesData', JSON.stringify(salesData));
+                
+                showNotification('Category deleted successfully!', 'success');
+                
+                // Update selectors and inputs
+                populateCategorySelectors();
+                generateCategoryInputs();
+                
+                // Reload categories and dashboard
+                loadCategories();
+                loadDashboard();
+            }
+        }
+        
+        // Generate report
+		function generateReport() {
+			const dateFrom = document.getElementById('reportDateFrom').value;
+			const dateTo = document.getElementById('reportDateTo').value;
+			const branchId = document.getElementById('reportBranch').value;
+			
+			// Build two datasets:
+			// 1) dateFilteredData: only date range filter (used for cross-branch comparisons)
+			// 2) filteredData: date + optional branch filter (used for category/date-wise + summary)
+			let dateFilteredData = salesData;
+			if (dateFrom) {
+				dateFilteredData = dateFilteredData.filter(sale => sale.date >= dateFrom);
+			}
+			if (dateTo) {
+				dateFilteredData = dateFilteredData.filter(sale => sale.date <= dateTo);
+			}
+			let filteredData = dateFilteredData;
+			if (branchId) {
+				filteredData = filteredData.filter(sale => String(sale.branchId) === String(branchId));
+			}
+            
+            // Calculate totals by category
+            const categoryData = {};
+            
+            categoriesData.forEach(category => {
+                const categorySales = filteredData.filter(sale => sale.categoryId === category.id);
+                const totalSales = categorySales.reduce((sum, sale) => sum + sale.salesAmount, 0);
+                const totalCost = categorySales.reduce((sum, sale) => sum + sale.costAmount, 0);
+                const totalProfit = totalSales - totalCost;
+                const profitMargin = totalSales > 0 ? (totalProfit / totalSales * 100) : 0;
+                
+                categoryData[category.id] = {
+                    name: category.name,
+                    totalSales,
+                    totalCost,
+                    totalProfit,
+                    profitMargin
+                };
+            });
+            
+            // Calculate grand totals
+            const grandTotalSales = Object.values(categoryData).reduce((sum, data) => sum + data.totalSales, 0);
+            const grandTotalCost = Object.values(categoryData).reduce((sum, data) => sum + data.totalCost, 0);
+            const grandTotalProfit = grandTotalSales - grandTotalCost;
+            const grandProfitMargin = grandTotalSales > 0 ? (grandTotalProfit / grandTotalSales * 100) : 0;
+            
+            // Update report summary
+            const summaryContainer = document.getElementById('reportSummary');
+            summaryContainer.innerHTML = `
+                <div class="col-md-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <div class="category-value text-primary">PKR ${grandTotalSales.toLocaleString()}</div>
+                            <div class="category-label">Total Sales</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <div class="category-value text-success">PKR ${grandTotalCost.toLocaleString()}</div>
+                            <div class="category-label">Total Cost</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <div class="category-value text-info">PKR ${grandTotalProfit.toLocaleString()}</div>
+                            <div class="category-label">Total Profit</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <div class="category-value text-warning">${grandProfitMargin.toFixed(1)}%</div>
+                            <div class="category-label">Profit Margin</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Update report table
+            const tableBody = document.getElementById('reportTableBody');
+            tableBody.innerHTML = '';
+            
+            Object.values(categoryData).forEach(data => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${data.name}</td>
+                    <td>PKR ${data.totalSales.toLocaleString()}</td>
+                    <td>PKR ${data.totalCost.toLocaleString()}</td>
+                    <td class="${data.totalProfit >= 0 ? 'text-success' : 'text-danger'}">
+                        PKR ${data.totalProfit.toLocaleString()}
+                    </td>
+                    <td>
+                        <span class="badge ${data.profitMargin >= 0 ? 'bg-success' : 'bg-danger'}">
+                            ${data.profitMargin.toFixed(1)}%
+                        </span>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // Add grand total row
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'table-active';
+            totalRow.innerHTML = `
+                <td><strong>Grand Total</strong></td>
+                <td><strong>PKR ${grandTotalSales.toLocaleString()}</strong></td>
+                <td><strong>PKR ${grandTotalCost.toLocaleString()}</strong></td>
+                <td class="${grandTotalProfit >= 0 ? 'text-success' : 'text-danger'}">
+                    <strong>PKR ${grandTotalProfit.toLocaleString()}</strong>
+                </td>
+                <td>
+                    <span class="badge ${grandProfitMargin >= 0 ? 'bg-success' : 'bg-danger'}">
+                        ${grandProfitMargin.toFixed(1)}%
+                    </span>
+                </td>
+            `;
+            tableBody.appendChild(totalRow);
+            
+			// Generate sales comparison table across all branches in date range
+			generateSalesComparisonTable(dateFilteredData);
+            
+            // Generate date wise data table
+            generateDateWiseTable(filteredData);
+        }
+        
+		// Generate sales comparison table
+		function generateSalesComparisonTable(filteredData) {
+			const comparisonTableBody = document.getElementById('salesComparisonTableBody');
+			comparisonTableBody.innerHTML = '';
+			
+			// Group by branch from the filtered sales only
+			const branchTotalsById = new Map(); // branchId -> { totalSales, totalCost }
+			filteredData.forEach(sale => {
+				const key = String(sale.branchId);
+				const current = branchTotalsById.get(key) || { totalSales: 0, totalCost: 0 };
+				current.totalSales += Number(sale.salesAmount || 0);
+				current.totalCost += Number(sale.costAmount || 0);
+				branchTotalsById.set(key, current);
+			});
+			
+			// Build rows only for branches present in filteredData
+			const rows = Array.from(branchTotalsById.entries()).map(([branchId, totals]) => {
+				const branch = branchesData.find(b => String(b.id) === String(branchId));
+				const name = branch ? branch.name : branchId;
+				const totalProfit = totals.totalSales - totals.totalCost;
+				const profitMargin = totals.totalSales > 0 ? (totalProfit / totals.totalSales * 100) : 0;
+				return {
+					name,
+					totalSales: totals.totalSales,
+					totalCost: totals.totalCost,
+					totalProfit,
+					profitMargin
+				};
+			});
+			
+			// Sort by total sales desc
+			rows.sort((a, b) => b.totalSales - a.totalSales);
+			
+			rows.forEach((data, index) => {
+				const row = document.createElement('tr');
+				row.innerHTML = `
+					<td>${index + 1}</td>
+					<td>${data.name}</td>
+					<td>PKR ${data.totalSales.toLocaleString()}</td>
+					<td>PKR ${data.totalCost.toLocaleString()}</td>
+					<td class="${data.totalProfit >= 0 ? 'text-success' : 'text-danger'}">
+						PKR ${data.totalProfit.toLocaleString()}
+					</td>
+					<td>
+						<span class="badge ${data.profitMargin >= 0 ? 'bg-success' : 'bg-danger'}">
+							${data.profitMargin.toFixed(1)}%
+						</span>
+					</td>
+				`;
+				comparisonTableBody.appendChild(row);
+			});
+		}
+        
+        // Generate date wise data table
+        function generateDateWiseTable(filteredData) {
+            const dateWiseTableBody = document.getElementById('dateWiseTableBody');
+            dateWiseTableBody.innerHTML = '';
+            
+            // Sort data by date (newest first)
+            const sortedData = [...filteredData].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Populate table
+            sortedData.forEach(sale => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${sale.date}</td>
+                    <td>${sale.branchName}</td>
+                    <td>${sale.categoryName}</td>
+                    <td>PKR ${sale.salesAmount.toLocaleString()}</td>
+                    <td>PKR ${sale.costAmount.toLocaleString()}</td>
+                    <td class="${sale.profit >= 0 ? 'text-success' : 'text-danger'}">
+                        PKR ${sale.profit.toLocaleString()}
+                    </td>
+                `;
+                dateWiseTableBody.appendChild(row);
+            });
+        }
+        
+		// Load branches (old UI-only version removed; see backend-enabled version below)
+        
+        // Save branch
+        function saveBranch() {
+            const branch = {
+                id: Date.now(),
+                name: document.getElementById('branchName').value,
+                address: document.getElementById('branchAddress').value,
+                phone: document.getElementById('branchPhone').value,
+                email: document.getElementById('branchEmail').value
+            };
+            
+            branchesData.push(branch);
+            localStorage.setItem('branchesData', JSON.stringify(branchesData));
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('addBranchModal')).hide();
+            
+            // Reset form
+            document.getElementById('branchForm').reset();
+            
+            // Show notification
+            showNotification('Branch saved successfully!', 'success');
+            
+            // Update dropdowns
+            populateBranchSelectors();
+            
+            // Reload branches
+            loadBranches();
+            loadDashboard();
+        }
+        
+        // Edit branch
+        function editBranch(id) {
+            const branch = branchesData.find(b => b.id === id);
+            if (branch) {
+                document.getElementById('branchName').value = branch.name;
+                document.getElementById('branchAddress').value = branch.address;
+                document.getElementById('branchPhone').value = branch.phone;
+                document.getElementById('branchEmail').value = branch.email || '';
+                
+                // Change save button to update
+                const saveBtn = document.getElementById('saveBranchBtn');
+                saveBtn.textContent = 'Update Branch';
+                saveBtn.onclick = function() {
+                    updateBranch(id);
+                };
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('addBranchModal'));
+                modal.show();
+            }
+        }
+        
+        // Update branch
+        function updateBranch(id) {
+            const branchIndex = branchesData.findIndex(b => b.id === id);
+            if (branchIndex !== -1) {
+                branchesData[branchIndex] = {
+                    id: id,
+                    name: document.getElementById('branchName').value,
+                    address: document.getElementById('branchAddress').value,
+                    phone: document.getElementById('branchPhone').value,
+                    email: document.getElementById('branchEmail').value
+                };
+                
+                localStorage.setItem('branchesData', JSON.stringify(branchesData));
+                
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('addBranchModal')).hide();
+                
+                // Reset form
+                document.getElementById('branchForm').reset();
+                
+                // Reset save button
+                const saveBtn = document.getElementById('saveBranchBtn');
+                saveBtn.textContent = 'Save Branch';
+                saveBtn.onclick = saveBranch;
+                
+                // Show notification
+                showNotification('Branch updated successfully!', 'success');
+                
+                // Update dropdowns
+                populateBranchSelectors();
+                
+                // Reload branches
+                loadBranches();
+                loadDashboard();
+            }
+        }
+        
+        // Delete branch
+        function deleteBranch(id) {
+            if (confirm('Are you sure you want to delete this branch? This will also delete all sales data for this branch.')) {
+                branchesData = branchesData.filter(b => b.id !== id);
+                salesData = salesData.filter(s => s.branchId !== id);
+                
+                localStorage.setItem('branchesData', JSON.stringify(branchesData));
+                localStorage.setItem('salesData', JSON.stringify(salesData));
+                
+                showNotification('Branch deleted successfully!', 'success');
+                
+                // Update dropdowns
+                populateBranchSelectors();
+                
+                // Reload branches
+                loadBranches();
+                loadDashboard();
+            }
+        }
+        
+        // Load settings
+        function loadSettings() {
+			// Load from backend first; fallback to local settingsData
+			apiRequest('/settings')
+				.then(data => {
+					settingsData = {
+						companyName: data.companyName || '',
+						currency: data.currency || 'PKR',
+						dateFormat: data.dateFormat || 'DD/MM/YYYY',
+						itemsPerPage: Number(data.itemsPerPage || 10),
+						defaultCostPercent: Number(data.defaultCostPercent ?? 70)
+					};
+					localStorage.setItem('settingsData', JSON.stringify(settingsData));
+				})
+				.catch(() => {})
+				.finally(() => {
+					document.getElementById('companyName').value = settingsData.companyName || '';
+					document.getElementById('currency').value = settingsData.currency || 'PKR';
+					document.getElementById('dateFormat').value = settingsData.dateFormat || 'DD/MM/YYYY';
+					document.getElementById('itemsPerPage').value = settingsData.itemsPerPage || 10;
+				});
+        }
+        
+        // Save settings
+        function saveSettings() {
+			const payload = {
+				companyName: document.getElementById('companyName').value,
+				currency: document.getElementById('currency').value,
+				dateFormat: document.getElementById('dateFormat').value,
+				itemsPerPage: parseInt(document.getElementById('itemsPerPage').value),
+				defaultCostPercent: parseFloat(settingsData.defaultCostPercent ?? 70)
+			};
+			apiRequest('/settings', { method: 'PUT', body: JSON.stringify(payload) })
+				.then((data) => {
+					settingsData = {
+						companyName: data.companyName || '',
+						currency: data.currency || 'PKR',
+						dateFormat: data.dateFormat || 'DD/MM/YYYY',
+						itemsPerPage: Number(data.itemsPerPage || 10),
+						defaultCostPercent: Number(data.defaultCostPercent ?? 70)
+					};
+					localStorage.setItem('settingsData', JSON.stringify(settingsData));
+					showNotification('Settings saved successfully!', 'success');
+				})
+				.catch(() => {
+					showNotification('Failed to save settings to server', 'error');
+				});
+        }
+        
+        // Backup data
+        function backupData() {
+            const backup = {
+                salesData: salesData,
+                branchesData: branchesData,
+                categoriesData: categoriesData,
+                settingsData: settingsData,
+                timestamp: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showNotification('Data backed up successfully!', 'success');
+        }
+        
+        // Restore data
+        function restoreData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const backup = JSON.parse(event.target.result);
+                    
+                    if (confirm('Are you sure you want to restore this backup? This will replace all current data.')) {
+                        salesData = backup.salesData || [];
+                        branchesData = backup.branchesData || [];
+                        categoriesData = backup.categoriesData || categoriesData;
+                        settingsData = backup.settingsData || settingsData;
+                        
+                        localStorage.setItem('salesData', JSON.stringify(salesData));
+                        localStorage.setItem('branchesData', JSON.stringify(branchesData));
+                        localStorage.setItem('categoriesData', JSON.stringify(categoriesData));
+                        localStorage.setItem('settingsData', JSON.stringify(settingsData));
+                        
+                        showNotification('Data restored successfully!', 'success');
+                        
+                        // Reload current section
+                        const activeSection = document.querySelector('.sidebar .nav-link.active').getAttribute('data-section');
+                        showSection(activeSection);
+                        
+                        // Update dropdowns
+                        populateBranchSelectors();
+                        populateCategorySelectors();
+                        generateCategoryInputs();
+                        
+                        // Reload data
+                        loadBranches();
+                        loadCategories();
+                        loadSettings();
+                    }
+                } catch (error) {
+                    showNotification('Error restoring data. Please check the file format.', 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+            
+            // Reset file input
+            e.target.value = '';
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationMessage = document.getElementById('notification-message');
+            
+            notification.className = 'notification ' + type;
+            notificationMessage.textContent = message;
+            
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+		// (print view helper removed by user request)
+	</script>
+
+	<script>
+		// Backend integration overrides (MongoDB via Express API)
+		const API_BASE = (typeof window !== 'undefined' ? `${location.origin}/api` : 'http://localhost:4000/api');
+
+		async function apiRequest(path, options = {}) {
+			try {
+				const res = await fetch(`${API_BASE}${path}`, {
+					headers: { 'Content-Type': 'application/json' },
+					...options
+				});
+				if (!res.ok) throw new Error(await res.text());
+				return await res.json();
+			} catch (e) {
+				console.warn('API error, falling back to localStorage where possible:', e);
+				throw e;
+			}
+		}
+
+		function mapBranch(doc) {
+			return {
+				id: doc._id || doc.id,
+				name: doc.name,
+				address: doc.address || '',
+				phone: doc.phone || '',
+				email: doc.email || ''
+			};
+		}
+
+		// Remove sales whose branch no longer exists (cleans up old local data)
+		function reconcileSalesWithBranches() {
+			const validBranchIds = new Set((branchesData || []).map(b => String(b.id)));
+			const originalLength = salesData.length;
+			salesData = salesData.filter(s => validBranchIds.has(String(s.branchId)));
+			if (salesData.length !== originalLength) {
+				localStorage.setItem('salesData', JSON.stringify(salesData));
+			}
+		}
+
+		// Override: loadBranches -> fetch from backend, then render
+		async function loadBranches() {
+			try {
+				const serverBranches = await apiRequest('/branches');
+				branchesData = serverBranches.map(mapBranch);
+				localStorage.setItem('branchesData', JSON.stringify(branchesData));
+				reconcileSalesWithBranches();
+			} catch (_) {
+				// keep local branchesData if API fails
+			}
+			const container = document.getElementById('branchesContainer');
+			container.innerHTML = '';
+			branchesData.forEach(branch => {
+				const card = document.createElement('div');
+				card.className = 'col-md-4 mb-3';
+				card.innerHTML = `
+					<div class="card branch-card h-100">
+						<div class="card-body">
+							<h5 class="card-title">${branch.name}</h5>
+							<p class="card-text">
+								<i class="fas fa-map-marker-alt me-2"></i>${branch.address}<br>
+								<i class="fas fa-phone me-2"></i>${branch.phone}<br>
+								<i class="fas fa-envelope me-2"></i>${branch.email || 'N/A'}
+							</p>
+							<div class="d-flex justify-content-between">
+								<button class="btn btn-sm btn-outline-primary" onclick="editBranch('${branch.id}')">
+									<i class="fas fa-edit"></i> Edit
+								</button>
+								<button class="btn btn-sm btn-outline-danger" onclick="deleteBranch('${branch.id}')">
+									<i class="fas fa-trash"></i> Delete
+								</button>
+							</div>
+						</div>
+					</div>
+				`;
+				container.appendChild(card);
+			});
+		}
+
+		// Override: saveBranch -> POST to backend
+		async function saveBranch() {
+			const payload = {
+				name: document.getElementById('branchName').value,
+				address: document.getElementById('branchAddress').value,
+				phone: document.getElementById('branchPhone').value,
+				email: document.getElementById('branchEmail').value
+			};
+			try {
+				const created = await apiRequest('/branches', { method: 'POST', body: JSON.stringify(payload) });
+				const mapped = mapBranch(created);
+				branchesData.push(mapped);
+				localStorage.setItem('branchesData', JSON.stringify(branchesData));
+			} catch (e) {
+				showNotification('Failed to save branch to server', 'error');
+				return;
+			}
+			// UI updates (do not mark API as failed if these error)
+			try {
+				const modalEl = document.getElementById('addBranchModal');
+				const existing = bootstrap.Modal.getInstance(modalEl);
+				if (existing) existing.hide();
+				document.getElementById('branchForm').reset();
+				showNotification('Branch saved successfully!', 'success');
+				populateBranchSelectors();
+				loadBranches();
+				loadDashboard();
+			} catch (uiErr) {
+				console.warn('UI update after save failed:', uiErr);
+			}
+		}
+
+		// Override: editBranch keeps working with string ids
+		function editBranch(id) {
+			const branch = branchesData.find(b => String(b.id) === String(id));
+			if (branch) {
+				document.getElementById('branchName').value = branch.name;
+				document.getElementById('branchAddress').value = branch.address;
+				document.getElementById('branchPhone').value = branch.phone;
+				document.getElementById('branchEmail').value = branch.email || '';
+				const saveBtn = document.getElementById('saveBranchBtn');
+				saveBtn.textContent = 'Update Branch';
+				saveBtn.onclick = function() { updateBranch(id); };
+				const modal = new bootstrap.Modal(document.getElementById('addBranchModal'));
+				modal.show();
+			}
+		}
+
+		// Override: updateBranch -> PUT to backend
+		async function updateBranch(id) {
+			const payload = {
+				name: document.getElementById('branchName').value,
+				address: document.getElementById('branchAddress').value,
+				phone: document.getElementById('branchPhone').value,
+				email: document.getElementById('branchEmail').value
+			};
+			try {
+				const updated = await apiRequest(`/branches/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+				const mapped = mapBranch(updated);
+				const index = branchesData.findIndex(b => String(b.id) === String(id));
+				if (index !== -1) {
+					branchesData[index] = mapped;
+					localStorage.setItem('branchesData', JSON.stringify(branchesData));
+				}
+			} catch (e) {
+				showNotification('Failed to update branch on server', 'error');
+				return;
+			}
+			// UI updates not treated as API failure
+			try {
+				const modalEl = document.getElementById('addBranchModal');
+				const existing = bootstrap.Modal.getInstance(modalEl);
+				if (existing) existing.hide();
+				document.getElementById('branchForm').reset();
+				const saveBtn = document.getElementById('saveBranchBtn');
+				saveBtn.textContent = 'Save Branch';
+				saveBtn.onclick = saveBranch;
+				showNotification('Branch updated successfully!', 'success');
+				populateBranchSelectors();
+				loadBranches();
+				loadDashboard();
+			} catch (uiErr) {
+				console.warn('UI update after update failed:', uiErr);
+			}
+		}
+
+		// Override: deleteBranch -> DELETE on backend
+		async function deleteBranch(id) {
+			if (!confirm('Are you sure you want to delete this branch? This will also delete all sales data for this branch.')) return;
+			try {
+				await apiRequest(`/branches/${id}`, { method: 'DELETE' });
+				branchesData = branchesData.filter(b => String(b.id) !== String(id));
+				salesData = salesData.filter(s => String(s.branchId) !== String(id));
+				localStorage.setItem('branchesData', JSON.stringify(branchesData));
+				localStorage.setItem('salesData', JSON.stringify(salesData));
+			} catch (e) {
+				showNotification('Failed to delete branch on server', 'error');
+				return;
+			}
+			// UI updates
+			try {
+				showNotification('Branch deleted successfully!', 'success');
+				populateBranchSelectors();
+				loadBranches();
+				loadDashboard();
+			} catch (uiErr) {
+				console.warn('UI update after delete failed:', uiErr);
+			}
+		}
+	</script>
+</body>
+</html>
